@@ -1412,6 +1412,11 @@ maybe_disable_locking (Display *dpy)
   const char *why = 0;
   Bool wayland_p = (getenv ("WAYLAND_DISPLAY") ||
                     getenv ("WAYLAND_SOCKET"));
+  if (wayland_p) {
+        fprintf(stderr, "putenv ret: %d\n", putenv("GDK_BACKEND=x11"));
+        fprintf(stderr, "setenv ret: %d\n", setenv("GDK_BACKEND", "x11", 1));
+  	wayland_p = 0;
+  }
 
 # ifdef NO_LOCKING
   why = "locking disabled at compile time";

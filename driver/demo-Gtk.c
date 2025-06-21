@@ -4992,7 +4992,7 @@ xscreensaver_window_realize (GtkWidget *self, gpointer user_data)
   if (! gdk_x11_window_get_xid (gtk_widget_get_window (self)))
     {
       s->dpy = NULL;
-      s->wayland_p = TRUE;
+      //s->wayland_p = TRUE;
     }
 
   if (s->dpy)
@@ -5004,7 +5004,7 @@ xscreensaver_window_realize (GtkWidget *self, gpointer user_data)
                    "protocol version %d.%d!\n", blurb(),
                    ProtocolVersion(s->dpy), ProtocolRevision(s->dpy));
           s->dpy = NULL;
-          s->wayland_p = TRUE;
+          //s->wayland_p = TRUE;
         }
     }
 
@@ -5018,7 +5018,7 @@ xscreensaver_window_realize (GtkWidget *self, gpointer user_data)
 
   if (getenv ("WAYLAND_DISPLAY") ||
       getenv ("WAYLAND_SOCKET"))
-    s->wayland_p = TRUE;
+  {}  //s->wayland_p = TRUE;
 
   /* If GTK is running directly under Wayland, try to open an X11 connection
      to XWayland anyway, so that get_string_resource and load_init_file work.
@@ -5406,6 +5406,15 @@ main (int argc, char *argv[])
 {
   char *s;
   progname = argv[0];
+  Bool wayland_p = (getenv ("WAYLAND_DISPLAY") ||
+                    getenv ("WAYLAND_SOCKET"));
+  if (wayland_p) {
+	  fprintf(stderr, "wayland active, setting env GDK_BACKEND=x11\n");
+	  setenv("GDK_BACKEND", "x11", 1);
+	  putenv("GDK_BACKEND=x11");
+	wayland_p = 0;
+  }
+
   s = strrchr (progname, '/');
   if (s) progname = s+1;
   g_log_set_default_handler (g_logger, NULL);
