@@ -177,6 +177,43 @@ connect_to_server (saver_info *si)
     {
       fprintf (stderr, "%s: xscreensaver does not seem to be running!\n",
                blurb());
+
+      /* Under normal circumstances, that window should have been created
+         by the "xscreensaver" process.  But if for some reason someone
+         has run "xscreensaver-gfx" directly (Wayland?) we need this window
+         to exist for ClientMessages to be receivable.  So let's make one.
+       */
+      XClassHint class_hints;
+      XSetWindowAttributes attrs;
+      unsigned long attrmask = 0;
+      pid_t pid = getpid();
+      char *id;
+      const char *version_number = XSCREENSAVER_VERSION;
+
+      class_hints.res_name  = (char *) progname;  /* not const? */
+      class_hints.res_class = "XScreenSaver";
+      id = (char *) malloc (20);
+      sprintf (id, "%lu", (unsigned long) pid);
+    
+      attrmask = CWOverrideRedirect | CWEventMask;
+      attrs.override_redirect = True;
+      attrs.event_mask = PropertyChangeMask;
+
+      daemon_window = XCreateWindow (si->dpy, RootWindow (si->dpy, 0),
+                                     0, 0, 1, 1, 0,
+                                     DefaultDepth (si->dpy, 0), InputOutput,
+                                     DefaultVisual (si->dpy, 0), attrmask, &attrs);
+      XStoreName (si->dpy, daemon_window, "XScreenSaver GFX");
+      XSetClassHint (si->dpy, daemon_window, &class_hints);
+      XChangeProperty (si->dpy, daemon_window, XA_WM_COMMAND, XA_STRING,
+                       8, PropModeReplace, (unsigned char *) progname,
+                       strlen (progname));
+      XChangeProperty (si->dpy, daemon_window, XA_SCREENSAVER_VERSION, XA_STRING,
+                       8, PropModeReplace, (unsigned char *) version_number,
+                       strlen (version_number));
+      XChangeProperty (si->dpy, daemon_window, XA_SCREENSAVER_ID, XA_STRING,
+                       8, PropModeReplace, (unsigned char *) id, strlen (id));
+      free (id);
     }
 }
 
