@@ -1,15 +1,18 @@
+
 So this works ok:
 
 swayidle -w \
   timeout 60 "xscreensaver-wayland.sh --verbose --start" \
   resume     "xscreensaver-wayland.sh --verbose --stop"
 
-No variant of this works at all, because swaylock doesn't have a "transparent" mode so you can't see the savers:
+this will activate swaylock and lock the console.  It may not 
+always work properly on all compositors:
 
 swayidle -w \
   timeout 60 "xscreensaver-wayland.sh --verbose --start" \
   resume     "xscreensaver-wayland.sh --verbose --stop" \
   timeout 90 'swaylock -f'
 
-"xscreensaver-command --cycle" and whatnot do not work because "xscreensaver" is the one that creates the window for ClientMessages to be delivered to; window's not there. That could be worked around, though.
+"xscreensaver-command --cycle" seems to work.
+
 
